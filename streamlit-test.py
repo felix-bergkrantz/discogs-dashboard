@@ -8,7 +8,7 @@ import altair as alt
 @st.cache_data  # Cache the data for faster loading
 def load_data():
     try:
-        df = pd.read_csv('salsoul_releases_updated_5.csv')
+        df = pd.read_csv('salsoul_releases_updated_5_final_version.csv')
         
         # Extract stats from the 'Stats' column
         def extract_stats(stats_str):
@@ -22,7 +22,7 @@ def load_data():
         df['in_wantlist'], df['in_collection'] = zip(*df['Stats'].apply(extract_stats))
         return df
     except FileNotFoundError:
-        st.error("The file 'salsoul_releases_updated_5.csv' was not found.")
+        st.error("The file was not found.")
         return pd.DataFrame()  # Return an empty DataFrame if the file is missing
 
 df = load_data()
@@ -51,11 +51,11 @@ if df.empty:
 st.image(
     "https://images.squarespace-cdn.com/content/v1/62fe9c18730c7512708cb412/09b5243b-3ba2-41b7-af86-a43b898dcac6/salsoul-records.png?format=1500w",  # Replace with your image path or URL
     caption="Welcome to the Salsoul Records interactive Dashboard",
-    use_container_width=True
+    use_column_width=True
 )
 
 # Check for the necessary columns
-cover_column = 'Thumb'  # Replace with the correct column name for album covers
+cover_column = 'Thumb'  
 if cover_column not in df.columns:
     st.error(f"The column '{cover_column}' is missing from the dataset.")
     st.stop()
@@ -93,12 +93,12 @@ Explore the releases from the Salsoul Records label using this interactive dashb
 """)
 
 # Releases by Year (All Data)
-st.subheader("Releases Per Year throughout the Salsoul history")
+st.subheader("Releases per year throughout the history of Salsoul Records")
 
 if not df.empty:
     # Prepare the data
     releases_per_year = df['Year'].value_counts().reset_index()
-    releases_per_year.columns = ['Year', 'Count']  # Rename columns to match Altair usage
+    releases_per_year.columns = ['Year', 'Count']  
 
     # Create an interactive heatmap-style bar chart with Altair
     chart = alt.Chart(releases_per_year).mark_bar().encode(
@@ -119,7 +119,7 @@ else:
 
 
 # Top 5 Most Collected Releases
-st.subheader("Top 5 Most Collected Releases by Discogs users")
+st.subheader("Top 5 most collected releases by Discogs users")
 
 unique_df = df.drop_duplicates(subset=['Release Title', 'Year'])
 top_collected = unique_df.sort_values(by='in_collection', ascending=False).head(5)
@@ -162,7 +162,7 @@ else:
     st.write("No data available for the top collected releases.")
 
 
-# Sidebar filters
+# Sidebar Filters
 st.sidebar.header("Filter Options")
 
 # Artist dropdown menu
@@ -172,7 +172,7 @@ artist_filter = st.sidebar.selectbox(
     help="Select an artist to view their releases."
 )
 
-# Filter data by selected artist
+# Filter Data by Selected Artist
 filtered_df = df[df['Artist'] == artist_filter]  # Filter the DataFrame by selected artist
 
 # Year filter for the selected artist
@@ -186,7 +186,7 @@ year_filter = st.sidebar.multiselect(
 # Apply year filter
 filtered_df = filtered_df[filtered_df['Year'].isin(year_filter)]
 
-# Display filtered data with album covers, stats, and Discogs links
+# Display filtered data with album covers, stats, and discogs Links
 st.subheader(f"Releases by {artist_filter}")
 
 if not filtered_df.empty:
@@ -286,3 +286,38 @@ if not filtered_df.empty:
     st.altair_chart(chart, use_container_width=True)
 else:
     st.write(f"No data available for {artist_filter} in the selected years.")
+
+
+# Releases by Year (All Data)
+st.subheader("Releases Per Year (All Data)")
+
+if not df.empty:
+    # Prepare the data
+    releases_per_year = df['Year'].value_counts().reset_index()
+    releases_per_year.columns = ['Year', 'Count'] 
+    
+    # Interactive heatmap-style bar chart with Altair
+    chart = alt.Chart(releases_per_year).mark_bar().encode(
+        x=alt.X('Year:O', title='Year', sort='ascending'),
+        y=alt.Y('Count:Q', title='Number of Releases'),
+        color=alt.Color('Count:Q', scale=alt.Scale(scheme='viridis'), title='Count'),
+        tooltip=['Year', 'Count']
+    ).properties(
+        title="Releases Per Year (All Data)",
+        width=600,
+        height=400
+    )
+    
+    # Display the chart in Streamlit
+    st.altair_chart(chart, use_container_width=True)
+else:
+    st.write("No data available.")
+
+# Download filtered data option
+st.subheader("Download Data")
+st.download_button(
+    label=f"Download Releases for {artist_filter} as CSV",
+    data=filtered_df.to_csv(index=False),
+    file_name=f"{artist_filter}_releases.csv",
+    mime='text/csv'
+)
