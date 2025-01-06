@@ -152,7 +152,7 @@ if not top_collected.empty:
 else:
     st.write("No data available for the top collected releases.")
 
-# Sidebar Filters
+# Sidebar filters
 st.sidebar.header("Filter Options")
 
 # Artist dropdown menu
@@ -162,7 +162,7 @@ artist_filter = st.sidebar.selectbox(
     help="Select an artist to view their releases."
 )
 
-# Filter Data by Selected Artist
+# Filter data by selected artist
 filtered_df = df[df['Artist'] == artist_filter]  # Filter the DataFrame by selected artist
 
 # Year filter for the selected artist
@@ -173,10 +173,10 @@ year_filter = st.sidebar.multiselect(
     help="Select one or more years to filter releases."
 )
 
-# Apply Year Filter
+# Apply year filter
 filtered_df = filtered_df[filtered_df['Year'].isin(year_filter)]
 
-# Display Filtered Data with Album Covers, Stats, and One YouTube Link
+# Display filtered data with album covers, stats, and one YouTube link
 st.subheader(f"Releases by {artist_filter}")
 
 # Debug: Display available columns in the filtered DataFrame
@@ -215,7 +215,7 @@ else:
     st.write(f"No data available for {artist_filter} in the selected years.")
 
 
-# Releases by Format for the Selected Artist
+# Releases by format for the selected artist
 st.subheader(f"Releases by Format for {artist_filter}")
 
 if not filtered_df.empty:
@@ -239,7 +239,7 @@ else:
     st.write(f"No data available for {artist_filter} in the selected years.")
 
 
-# Releases Timeline for the Selected Artist
+# Releases timeline for the Selected Artist
 st.subheader(f"Releases Timeline for {artist_filter}")
 
 if not filtered_df.empty:
@@ -260,32 +260,6 @@ if not filtered_df.empty:
     st.altair_chart(chart, use_container_width=True)
 else:
     st.write(f"No data available for {artist_filter} in the selected years.")
-
-
-# Releases by Year (All Data)
-st.subheader("Releases Per Year (All Data)")
-
-if not df.empty:
-    # Prepare the data
-    releases_per_year = df['Year'].value_counts().reset_index()
-    releases_per_year.columns = ['Year', 'Count']  # Rename columns to match Altair usage
-
-    # Interactive heatmap-style bar chart with Altair
-    chart = alt.Chart(releases_per_year).mark_bar().encode(
-        x=alt.X('Year:O', title='Year', sort='ascending'),
-        y=alt.Y('Count:Q', title='Number of Releases'),
-        color=alt.Color('Count:Q', scale=alt.Scale(scheme='viridis'), title='Count'),
-        tooltip=['Year', 'Count']
-    ).properties(
-        title="Releases Per Year (All Data)",
-        width=600,
-        height=400
-    )
-    
-    # Display the chart in Streamlit
-    st.altair_chart(chart, use_container_width=True)
-else:
-    st.write("No data available.")
 
 # Download filtered data option
 st.subheader("Download Data")
