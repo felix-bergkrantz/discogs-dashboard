@@ -92,8 +92,8 @@ at the design, you can see the red bar has been 'patched over' with the cloud il
 Explore the releases from the Salsoul Records label using this interactive dashboard!
 """)
 
-# Releases by Year (All Data)
-st.subheader("Releases per year throughout the history of Salsoul Records")
+# Releases by Year (All releases)
+st.subheader("Releases throughout the history of Salsoul Records")
 
 if not df.empty:
     # Prepare the data
@@ -287,31 +287,6 @@ if not filtered_df.empty:
 else:
     st.write(f"No data available for {artist_filter} in the selected years.")
 
-
-# Releases by Year (All Data)
-st.subheader("Releases Per Year (All Data)")
-
-if not df.empty:
-    # Prepare the data
-    releases_per_year = df['Year'].value_counts().reset_index()
-    releases_per_year.columns = ['Year', 'Count'] 
-    
-    # Interactive heatmap-style bar chart with Altair
-    chart = alt.Chart(releases_per_year).mark_bar().encode(
-        x=alt.X('Year:O', title='Year', sort='ascending'),
-        y=alt.Y('Count:Q', title='Number of Releases'),
-        color=alt.Color('Count:Q', scale=alt.Scale(scheme='viridis'), title='Count'),
-        tooltip=['Year', 'Count']
-    ).properties(
-        title="Releases Per Year (All Data)",
-        width=600,
-        height=400
-    )
-    
-    # Display the chart in Streamlit
-    st.altair_chart(chart, use_container_width=True)
-else:
-    st.write("No data available.")
 
 # Download filtered data option
 st.subheader("Download Data")
