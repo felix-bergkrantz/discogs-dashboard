@@ -27,36 +27,35 @@ def load_data():
 
 df = load_data()
 
-
-def fetch_youtube_links(release_id):
+def fetch_release_data(release_id):
     base_url = f"https://api.discogs.com/releases/{release_id}"
     headers = {'User-Agent': 'SalsoulApp/1.0 +https://mywebsite.com'}
     response = requests.get(base_url, headers=headers)
     if response.status_code == 200:
         release_data = response.json()
-        return [
-            video['uri'] for video in release_data.get('videos', []) if "youtube.com" in video.get('uri', "")
-        ]
+        return {
+            "youtube_links": [
+                video['uri'] for video in release_data.get('videos', []) if "youtube.com" in video.get('uri', "")
+            ],
+            "uri": release_data.get('uri', None)  # Extract the Discogs release URL
+        }
     else:
-        return []
+        return {"youtube_links": [], "uri": None}
 
 
 # Stop execution if the DataFrame is empty
 if df.empty:
     st.stop()
 
-# Debugging: Display column names to verify correct column names
-#st.write("Column Names in Dataset:", df.columns)
-
-# Add a header image
+# Header image
 st.image(
     "https://images.squarespace-cdn.com/content/v1/62fe9c18730c7512708cb412/09b5243b-3ba2-41b7-af86-a43b898dcac6/salsoul-records.png?format=1500w",  # Replace with your image path or URL
     caption="Welcome to the Salsoul Records interactive Dashboard",
-    use_container_width=True
+    use_column_width=True
 )
 
 # Check for the necessary columns
-cover_column = 'Thumb'  
+cover_column = 'Thumb'  # Replace with the correct column name for album covers
 if cover_column not in df.columns:
     st.error(f"The column '{cover_column}' is missing from the dataset.")
     st.stop()
@@ -90,10 +89,7 @@ At the same time as the RCA deal, a solid red bar appears under the main Salsoul
 at the design, you can see the red bar has been 'patched over' with the cloud illustration not aligned correctly 
 (e.g., Inner Life - I Like It Like That).
 
-See also Salsoul's sister label, Salsoul Salsa Series, specializing in Latin music as an evolution and continuation 
-of Mericana Records.
-
-Explore the releases from the Salsoul Records label using this interactive dashboard, now with album covers and stats!
+Explore the releases from the Salsoul Records label using this interactive dashboard!
 """)
 
 # Releases by Year (All Data)
@@ -125,34 +121,48 @@ else:
 # Top 5 Most Collected Releases
 st.subheader("Top 5 Most Collected Releases by Discogs users")
 
-# Drop duplicates based on relevant columns (e.g., 'Release Title' and 'Year')
 unique_df = df.drop_duplicates(subset=['Release Title', 'Year'])
-
-# Sort by 'in_collection' and take the top 5
 top_collected = unique_df.sort_values(by='in_collection', ascending=False).head(5)
 
-# Display Top 5 Releases
 if not top_collected.empty:
-    num_columns = 5  # Display 5 releases in a row
-    columns = st.columns(num_columns)  # Create columns for the grid
+    num_columns = 5
+    columns = st.columns(num_columns)
 
     for idx, row in enumerate(top_collected.iterrows()):
         row_data = row[1]
-        col = columns[idx % num_columns]  # Select the column for the current item
+        col = columns[idx % num_columns]
         with col:
-            if pd.notnull(row_data[cover_column]):  # Check if the album cover URL exists
-                st.markdown(
-                    f'<img src="{row_data[cover_column]}" alt="Album Cover" class="album-cover">',
-                    unsafe_allow_html=True
-                )
-                st.caption(f"{row_data['Artist']} - {row_data['Release Title']} - {row_data['Year']}")
-                st.write(f"**In Collection**: {row_data['in_collection']}")
-            else:
-                st.write(f"No image for {row_data['Release Title']}.")
+            release_id = row_data['ID']
+            release_data = fetch_release_data(release_id)
+            release_url = release_data["uri"]
+
+            if pd.notnull(row_data[cover_column]):
+                # Clickable image
+                if release_url:
+                    st.markdown(
+                        f"""
+                        <a href="{release_url}" target="_blank" style="text-decoration:none;">
+                            <img src="{row_data[cover_column]}" alt="Album Cover" class="album-cover">
+                        </a>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.markdown(
+                        f"""
+                        <img src="{row_data[cover_column]}" alt="Album Cover" class="album-cover">
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+            # Title and collection count
+            st.caption(f"{row_data['Artist']} - {row_data['Release Title']} - {row_data['Year']}")
+            st.write(f"**In Collection**: {row_data['in_collection']}")
 else:
     st.write("No data available for the top collected releases.")
 
-# Sidebar filters
+
+# Sidebar Filters
 st.sidebar.header("Filter Options")
 
 # Artist dropdown menu
@@ -162,7 +172,7 @@ artist_filter = st.sidebar.selectbox(
     help="Select an artist to view their releases."
 )
 
-# Filter data by selected artist
+# Filter Data by Selected Artist
 filtered_df = df[df['Artist'] == artist_filter]  # Filter the DataFrame by selected artist
 
 # Year filter for the selected artist
@@ -173,49 +183,65 @@ year_filter = st.sidebar.multiselect(
     help="Select one or more years to filter releases."
 )
 
-# Apply year filter
+# Apply Year Filter
 filtered_df = filtered_df[filtered_df['Year'].isin(year_filter)]
 
-# Display filtered data with album covers, stats, and one YouTube link
+# Display Filtered Data with Album Covers, Stats, and Discogs Links
 st.subheader(f"Releases by {artist_filter}")
 
-# Debug: Display available columns in the filtered DataFrame
-#st.write("Available Columns:", filtered_df.columns)
-
 if not filtered_df.empty:
-    # Define the number of columns in the grid
-    num_columns = 3
+    num_columns = 3  # Display 3 releases per row
     columns = st.columns(num_columns)  # Create columns for the grid
 
-    # Iterate through the filtered DataFrame and display images, stats, and one YouTube link
     for idx, row in enumerate(filtered_df.iterrows()):
         row_data = row[1]
-        col = columns[idx % num_columns]  # Select the column for the current item
+        col = columns[idx % num_columns]
         with col:
-            if pd.notnull(row_data[cover_column]):  # Check if the album cover URL exists
-                st.markdown(
-                    f'<img src="{row_data[cover_column]}" alt="Album Cover" class="album-cover">',
-                    unsafe_allow_html=True
-                )
-                st.caption(f"{row_data['Year']} - {row_data['Release Title']}")
-                st.write(f"**In Wantlist**: {row_data['in_wantlist']}")
-                st.write(f"**In Collection**: {row_data['in_collection']}")
-                
-                # Fetch and display the first YouTube link for the release
-                release_id = row_data['ID']  # Replace with the correct column name
-                youtube_links = fetch_youtube_links(release_id)
-                if youtube_links:
-                    first_link = youtube_links[0]  # Get the first link
-                    st.markdown(f"**[Watch on YouTube]({first_link})**")
-                else:
-                    st.write("No YouTube link available.")
+            # Check if release_id exists
+            release_id = row_data.get('ID', None)
+            if release_id:
+                release_data = fetch_release_data(release_id)
+                release_url = release_data.get("uri", None)
+                youtube_links = release_data.get("youtube_links", [])
             else:
-                st.write(f"No image for {row_data['Release Title']}.")
+                release_data = {"youtube_links": [], "uri": None}
+                release_url = None
+                youtube_links = []
+
+            # Display clickable album cover or plain image
+            if pd.notnull(row_data[cover_column]):
+                if release_url:
+                    st.markdown(
+                        f"""
+                        <a href="{release_url}" target="_blank" style="text-decoration:none;">
+                            <img src="{row_data[cover_column]}" alt="Album Cover" class="album-cover">
+                        </a>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.markdown(
+                        f"""
+                        <img src="{row_data[cover_column]}" alt="Album Cover" class="album-cover">
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+            # Title and collection count
+            st.caption(f"{row_data['Year']} - {row_data['Release Title']}")
+            st.write(f"**In Collection**: {row_data['in_collection']}")
+
+            # Display the first YouTube link if available
+            if youtube_links:
+                first_link = youtube_links[0]
+                st.markdown(f"**[Watch on YouTube]({first_link})**")
+            else:
+                st.write("No YouTube link available.")
 else:
     st.write(f"No data available for {artist_filter} in the selected years.")
 
 
-# Releases by format for the selected artist
+# Releases by Format for the Selected Artist
 st.subheader(f"Releases by Format for {artist_filter}")
 
 if not filtered_df.empty:
@@ -239,7 +265,7 @@ else:
     st.write(f"No data available for {artist_filter} in the selected years.")
 
 
-# Releases timeline for the Selected Artist
+# Releases Timeline for the Selected Artist
 st.subheader(f"Releases Timeline for {artist_filter}")
 
 if not filtered_df.empty:
@@ -260,6 +286,32 @@ if not filtered_df.empty:
     st.altair_chart(chart, use_container_width=True)
 else:
     st.write(f"No data available for {artist_filter} in the selected years.")
+
+
+# Releases by Year (All Data)
+st.subheader("Releases Per Year (All Data)")
+
+if not df.empty:
+    # Prepare the data
+    releases_per_year = df['Year'].value_counts().reset_index()
+    releases_per_year.columns = ['Year', 'Count']  # Rename columns to match Altair usage
+
+    # Interactive heatmap-style bar chart with Altair
+    chart = alt.Chart(releases_per_year).mark_bar().encode(
+        x=alt.X('Year:O', title='Year', sort='ascending'),
+        y=alt.Y('Count:Q', title='Number of Releases'),
+        color=alt.Color('Count:Q', scale=alt.Scale(scheme='viridis'), title='Count'),
+        tooltip=['Year', 'Count']
+    ).properties(
+        title="Releases Per Year (All Data)",
+        width=600,
+        height=400
+    )
+    
+    # Display the chart in Streamlit
+    st.altair_chart(chart, use_container_width=True)
+else:
+    st.write("No data available.")
 
 # Download filtered data option
 st.subheader("Download Data")
