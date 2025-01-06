@@ -51,7 +51,7 @@ if df.empty:
 st.image(
     "https://images.squarespace-cdn.com/content/v1/62fe9c18730c7512708cb412/09b5243b-3ba2-41b7-af86-a43b898dcac6/salsoul-records.png?format=1500w",  # Replace with your image path or URL
     caption="Welcome to the Salsoul Records interactive Dashboard",
-    use_column_width=True
+    use_container_width=True
 )
 
 # Check for the necessary columns
