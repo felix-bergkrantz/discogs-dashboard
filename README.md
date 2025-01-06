@@ -6,42 +6,42 @@ The **Salsoul Records Dashboard** is a web-based interactive application built u
 ## Features
 
 ### 1. Releases Per Year
-* An interactive bar chart displaying the number of releases per year throughout Salsoul's history
-* Highlights trends and peaks in the label's production over time
+ An interactive bar chart displaying the number of releases per year throughout Salsoul's history
+ Highlights trends and peaks in the label's production over time
 
 ### 2. Top 5 Most Collected Releases
-* Displays the top 5 releases with the highest collection counts by Discogs users
-* Includes clickable album covers linked directly to Discogs pages
+ Displays the top 5 releases with the highest collection counts by Discogs users
+ Includes clickable album covers linked directly to Discogs pages
 
 ### 3. Filterable Artist and Year Data
-* A sidebar allows users to filter releases by artist and year
-* Displays detailed information about each filtered release, including:
- * Album cover (clickable link to Discogs)
- * Title, year, and "In Collection" stats
- * First available YouTube link (if any)
+ A sidebar allows users to filter releases by artist and year
+ Displays detailed information about each filtered release, including:
+  Album cover (clickable link to Discogs)
+  Title, year, and "In Collection" stats
+  First available YouTube link (if any)
 
 ### 4. Releases by Format
-* A bar chart summarizing the distribution of releases by format (e.g., vinyl, CD, etc.)
+ A bar chart summarizing the distribution of releases by format (e.g., vinyl, CD, etc.)
 
 ### 5. Releases Timeline
-* A line chart showing the number of releases over time for the selected artist
+ A line chart showing the number of releases over time for the selected artist
 
 ### 6. Data Download
-* Allows users to download filtered data as a CSV file for offline analysis
+ Allows users to download filtered data as a CSV file for offline analysis
 
 ## How It Works
-* The app reads data from a pre-processed CSV file (`salsoul_releases_updated_5_final_version.csv`)
-* Data is dynamically fetched from the **Discogs API** to enhance information, such as:
- * Links to Discogs release pages
- * YouTube video links associated with releases
-* Streamlit's layout and interactivity provide a clean and user-friendly interface
+ The app reads data from a pre-processed CSV file (`salsoul_releases_updated_5_final_version.csv`)
+ Data is dynamically fetched from the **Discogs API** to enhance information, such as:
+  Links to Discogs release pages
+  YouTube video links associated with releases
+ Streamlit's layout and interactivity provide a clean and user-friendly interface
 
 ## Installation and Setup
 
 ### Prerequisites
-* Python 3.8 or higher
-* Required Python packages:
- * `streamlit`
- * `pandas`
- * `altair`
- * `requests`
+ Python 3.8 or higher
+ Required Python packages:
+  `streamlit`
+  `pandas`
+  `altair`
+  `requests`
