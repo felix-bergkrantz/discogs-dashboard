@@ -1,5 +1,7 @@
 # Salsoul Records Dashboard
 
+https://felix-record-label-dashboard.streamlit.app/
+
 ## Overview
 The **Salsoul Records Dashboard** is a web-based interactive application built using **Streamlit** that allows users to explore the iconic releases from the legendary Salsoul Records label. It provides visual insights, filterable data, and detailed information about the label's releases, including clickable links to Discogs and YouTube videos.
 
